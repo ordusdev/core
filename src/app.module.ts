@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { UsecasesModule } from './usecases/usecases.module';
+import { ControllersModule } from 'src/infra/http/controllers/controllers.module';
 
 @Module({
-  imports: [UsecasesModule],
+  imports: [ControllersModule],
 })
 export class AppModule {}

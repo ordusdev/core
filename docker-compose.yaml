@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ordus-db
+    restart: always
+    environment:
+      POSTGRES_USER: ordus
+      POSTGRES_PASSWORD: ordus
+      POSTGRES_DB: ordus
+    ports:
+      - '5432:5432'
+    volumes:
+      - .volumes/pg_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
