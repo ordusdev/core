@@ -61,10 +61,6 @@ export class Exception {
     console.log(this);
   }
 
-  throw() {
-    throw this;
-  }
-
   returns() {
     return {
       statusCode: this.statusCode,

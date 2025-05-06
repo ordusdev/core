@@ -22,6 +22,10 @@ export abstract class Entity<Model> {
     return this.repository.findAll();
   }
 
+  async getMany(filters?: Record<string, string>): Promise<Model[]> {
+    return this.repository.findMany(filters);
+  }
+
   async updateOne(id: string, data: Partial<Model>): Promise<Model | null> {
     return this.repository.updateOne(id, data);
   }

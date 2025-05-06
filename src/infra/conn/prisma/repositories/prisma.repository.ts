@@ -33,6 +33,12 @@ export class PrismaRepository<T> implements DomainRepository<T> {
     return this.prisma[this.modelName].findMany() as Promise<T[]>;
   }
 
+  findMany(filters?: Record<string, string>): Promise<T[]> {
+    return this.prisma[this.modelName].findMany({
+      where: filters,
+    }) as Promise<T[]>;
+  }
+
   updateOne(id: string, data: Partial<T>): Promise<T> {
     return this.prisma[this.modelName].update({
       where: { id },

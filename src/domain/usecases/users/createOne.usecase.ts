@@ -1,37 +1,38 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { UserEntity } from 'src/domain/entities/user.entity';
 import { UserModel } from 'src/domain/models/user.model';
-import { DomainRepository } from 'src/domain/repositories/repository.interface';
-import { USERS_REPOSITORY } from 'src/domain/repositories/users.repository.interface';
 import { AlreadyExistsException } from 'src/domain/exceptions/alreadyExists.exception';
 import { InternalException } from 'src/domain/exceptions/internal.exception';
+import { HashUtil } from 'src/domain/utils/hash.util';
+import { VerifyUsernameUserUsecase } from './verifyUsername.usecase';
 
 @Injectable()
 export class CreateOneUserUsecase {
-  private entity: UserEntity;
   constructor(
-    @Inject(USERS_REPOSITORY)
-    private readonly usersRepository: DomainRepository<UserModel>,
-  ) {
-    this.entity = new UserEntity(this.usersRepository);
-  }
+    private readonly entity: UserEntity,
+    @Inject(VerifyUsernameUserUsecase.name)
+    private readonly verifyUsernameUsecase: VerifyUsernameUserUsecase,
+  ) {}
 
   async execute(data: Omit<UserModel, 'id'>) {
     try {
-      const [alreadyExistsEmail, alreadyExistsUsername] = await Promise.all([
-        this.entity.getOneByEmail(data.email),
-        this.entity.getOneByUsername(data.username),
-      ]);
+      const [alreadyExistsEmail, { available: isUsernameAvailable }] =
+        await Promise.all([
+          this.entity.getOneByEmail(data.email),
+          this.verifyUsernameUsecase.execute(data.username),
+        ]);
 
-      if (alreadyExistsEmail || alreadyExistsUsername) {
+      if (alreadyExistsEmail || !isUsernameAvailable) {
         throw new AlreadyExistsException(
           [data.email, data.username],
           'CreateOneUserUsecase',
         );
       }
 
-      // data.password = await this.entity.hashPassword(data.password);
-      return this.entity.createOne(data);
+      data.password = HashUtil.encrypt(data.password);
+      const user = await this.entity.createOne(data);
+      delete user.password;
+      return user;
     } catch (error) {
       if (error instanceof AlreadyExistsException) throw error;
       throw new InternalException(null, null, error);

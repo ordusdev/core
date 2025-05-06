@@ -5,9 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["clientExtensions"]
-  output          = "../src/infra/conn/prisma/generated"
+  provider = "prisma-client-js"
+  output   = "../src/infra/conn/prisma/generated"
 }
 
 datasource db {
@@ -16,11 +15,55 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(nanoid())
-  name      String
+  id        String   @id @default(nanoid(8))
   email     String   @unique
   username  String   @unique
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  logs      Log[]
+}
+
+model Role {
+  id          String @id @default(nanoid(8))
+  name        String @unique
+  fullname    String
+  description String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+
+enum LogType {
+  AUTH
+  CRUD
+  NOTIFICATION
+}
+
+model Log {
+  id String @id @default(nanoid(8))
+
+  level       LogLevel
+  type        LogType
+  origin      String? // Ex: "api", "admin", "worker"
+  ipaddr      String?
+  message     String
+  context     Json?
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([level])
+  @@index([type])
+  @@index([createdById])
+  @@index([createdAt])
+  @@index([origin])
 }

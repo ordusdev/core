@@ -1,4 +1,6 @@
 export * from './createOne.usecase';
+export * from './verifyUsername.usecase';
+export * from './getMany.usecase';
 
 // export * from './deleteOne.usecase';
 // export * from './findAll.usecase';
